@@ -41,6 +41,8 @@ ApexHires strips out social feeds, post creation, and public networking to focus
 | **Super Admin** | Web | Dashboard with charts, user management, job moderation, application overview, admin management |
 
 > **Web users** are automatically directed to the Admin Panel. Mobile users see the job seeker or recruiter experience.
+>
+> 🔗 **Admin Panel:** [https://apexhires.web.app/#/admin](https://apexhires.web.app/#/admin)
 
 ---
 
@@ -396,8 +398,10 @@ flutter run -d ios --dart-define-from-file=.env
 
 ### Web (Admin Panel)
 
+🔗 **Live Admin Panel:** [https://apexhires.web.app/#/admin](https://apexhires.web.app/#/admin)
+
 ```bash
-# Run on web
+# Run on web locally
 flutter run -d chrome --web-port=8080 --dart-define-from-file=.env
 
 # When accessed on web, the admin login page appears by default
