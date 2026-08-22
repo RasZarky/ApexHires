@@ -1,0 +1,67 @@
+rules_version = '2';
+// v2 - removed get() calls from all query rules
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper function
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // ==================== USERS ====================
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow update: if isAuthenticated() && request.auth.uid == userId;
+      allow delete: if false;
+
+      match /bookmarks/{bookmarkId} {
+        allow read, write: if isAuthenticated() && request.auth.uid == userId;
+      }
+    }
+
+    // ==================== JOBS ====================
+    match /jobs/{jobId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isAuthenticated();
+    }
+
+    // ==================== APPLICATIONS ====================
+    match /applications/{applicationId} {
+      // Direct field matching — no get() calls, safe for queries
+      allow read: if isAuthenticated() && (
+        request.auth.uid == resource.data.seeker_id
+        || request.auth.uid == resource.data.recruiter_id
+      );
+
+      allow create: if isAuthenticated()
+        && request.auth.uid == resource.data.seeker_id;
+
+      allow update: if isAuthenticated()
+        && request.auth.uid == resource.data.recruiter_id;
+
+      allow delete: if false;
+    }
+
+    // ==================== CHATS ====================
+    match /chats/{chatId} {
+      // Any authenticated user can read chats (query filters by participant)
+      allow read: if isAuthenticated();
+
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if false;
+
+      // Messages subcollection
+      match /messages/{messageId} {
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated()
+          && request.auth.uid == resource.data.sender_id;
+        allow update: if isAuthenticated();
+        allow delete: if false;
+      }
+    }
+  }
+}
