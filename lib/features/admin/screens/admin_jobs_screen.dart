@@ -469,40 +469,51 @@ class _DesktopJobRow extends StatelessWidget {
             ),
           ),
           // Posted On column
-          Expanded(
+          Flexible(
             flex: 1,
-            child: Text(
-              DateFormat('MMM d, yyyy').format(job.createdAt),
-              style: const TextStyle(
-                fontSize: 13,
-                color: AppColors.secondaryText,
+            fit: FlexFit.loose,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                DateFormat('MMM d, yyyy').format(job.createdAt),
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: AppColors.secondaryText,
+                ),
               ),
             ),
           ),
           // Applied Users column
-          Expanded(
+          Flexible(
             flex: 1,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceVariant,
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Text(
-                '${job.applicationsCount}',
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.darkText,
+            fit: FlexFit.loose,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceVariant,
+                  borderRadius: BorderRadius.circular(6),
                 ),
-                textAlign: TextAlign.center,
+                child: Text(
+                  '${job.applicationsCount}',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.darkText,
+                  ),
+                ),
               ),
             ),
           ),
           // Status column
-          Expanded(
+          Flexible(
             flex: 1,
-            child: StatusBadge(status: job.status, small: true),
+            fit: FlexFit.loose,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: StatusBadge(status: job.status, small: true),
+            ),
           ),
           // Actions column (3-dot menu)
           Expanded(

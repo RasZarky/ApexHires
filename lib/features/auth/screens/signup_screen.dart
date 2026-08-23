@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:apex_hires/features/auth/providers/auth_provider.dart';
 import 'package:apex_hires/models/user_model.dart';
 import 'package:apex_hires/core/theme/app_theme.dart';
+import 'package:apex_hires/services/notification_service.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -48,6 +49,11 @@ class _SignupScreenState extends State<SignupScreen> {
     );
 
     if (success && mounted) {
+      // Initialize notifications for this session
+      final user = authProvider.user;
+      if (user != null) {
+        NotificationService().initialize(user.uid);
+      }
       // For recruiters, save company name to profile immediately
       if (_role == 'recruiter' && _companyController.text.isNotEmpty) {
         await authProvider.updateProfile(
@@ -210,6 +216,10 @@ class _SignupScreenState extends State<SignupScreen> {
                                 final success =
                                     await authProvider.signInWithGoogle(role: _role);
                                 if (success && mounted) {
+                                  final user = authProvider.user;
+                                  if (user != null) {
+                                    NotificationService().initialize(user.uid);
+                                  }
                                   Navigator.of(context)
                                       .pushReplacementNamed('/profile_setup');
                                 }

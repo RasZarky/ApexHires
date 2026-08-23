@@ -457,17 +457,25 @@ class _DesktopApplicationRow extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          Expanded(
+          Flexible(
             flex: 1,
-            child: StatusBadge(status: application.status, small: true),
+            fit: FlexFit.loose,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: StatusBadge(status: application.status, small: true),
+            ),
           ),
-          Expanded(
+          Flexible(
             flex: 1,
-            child: Text(
-              DateFormat('MMM d').format(application.appliedAt),
-              style: const TextStyle(
-                fontSize: 13,
-                color: AppColors.secondaryText,
+            fit: FlexFit.loose,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                DateFormat('MMM d').format(application.appliedAt),
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: AppColors.secondaryText,
+                ),
               ),
             ),
           ),

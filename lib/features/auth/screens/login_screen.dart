@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:apex_hires/features/auth/providers/auth_provider.dart';
 import 'package:apex_hires/core/theme/app_theme.dart';
+import 'package:apex_hires/services/notification_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -53,6 +54,9 @@ class _LoginScreenState extends State<LoginScreen> {
   void _navigateToHome(AuthProvider authProvider) {
     final user = authProvider.user;
     if (user == null) return;
+
+    // Initialize notifications for this session
+    NotificationService().initialize(user.uid);
 
     String route;
     switch (user.role) {

@@ -11,7 +11,8 @@ import 'package:apex_hires/core/widgets/common_widgets.dart';
 import 'package:intl/intl.dart';
 
 class ApplicationTrackerScreen extends StatefulWidget {
-  const ApplicationTrackerScreen({super.key});
+  final VoidCallback? onNavigateToJobs;
+  const ApplicationTrackerScreen({super.key, this.onNavigateToJobs});
 
   @override
   State<ApplicationTrackerScreen> createState() =>
@@ -108,9 +109,7 @@ class _ApplicationTrackerScreenState extends State<ApplicationTrackerScreen>
                         : 'No ${AppColors.getStatusLabel(_selectedStatus)} applications',
                     subtitle: 'Start applying to jobs to track your progress here',
                     actionLabel: 'Browse Jobs',
-                    onAction: () {
-                      // Navigate to jobs tab
-                    },
+                    onAction: widget.onNavigateToJobs,
                   );
                 }
 

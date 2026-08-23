@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:apex_hires/features/admin/providers/admin_provider.dart';
 import 'package:apex_hires/models/user_model.dart';
 import 'package:apex_hires/core/theme/app_theme.dart';
@@ -374,6 +375,8 @@ class _MobileUserCard extends StatelessWidget {
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               _RoleBadge(role: user.role),
+              if (user.role == 'recruiter')
+                _VerifiedBadge(isVerified: user.recruiterProfile?.isVerified == true),
               _StatusIndicator(isBlocked: user.isBlocked, isDeleted: user.isDeleted),
               Text(
                 DateFormat('MMM d, yyyy').format(user.createdAt),
@@ -542,23 +545,38 @@ class _DesktopUserRow extends StatelessWidget {
           // Role column
           Expanded(
             flex: 1,
-            child: _RoleBadge(role: user.role),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: _RoleBadge(role: user.role),
+            ),
           ),
           // Registered On column
           Expanded(
             flex: 1,
-            child: Text(
-              DateFormat('MMM d, yyyy').format(user.createdAt),
-              style: const TextStyle(
-                fontSize: 13,
-                color: AppColors.secondaryText,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                DateFormat('MMM d, yyyy').format(user.createdAt),
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: AppColors.secondaryText,
+                ),
               ),
             ),
           ),
           // Status column
           Expanded(
             flex: 1,
-            child: _StatusIndicator(isBlocked: user.isBlocked, isDeleted: user.isDeleted),
+            child: Wrap(
+              spacing: 6,
+              runSpacing: 4,
+              crossAxisAlignment: WrapCrossAlignment.start,
+              children: [
+                _StatusIndicator(isBlocked: user.isBlocked, isDeleted: user.isDeleted),
+                if (user.role == 'recruiter')
+                  _VerifiedBadge(isVerified: user.recruiterProfile?.isVerified == true),
+              ],
+            ),
           ),
           // Actions column (3-dot menu)
           Expanded(
@@ -823,6 +841,43 @@ class _StatusIndicator extends StatelessWidget {
   }
 }
 
+// --- Verified badge for recruiters ---
+class _VerifiedBadge extends StatelessWidget {
+  final bool isVerified;
+
+  const _VerifiedBadge({required this.isVerified});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: (isVerified ? AppColors.success : AppColors.lightText).withAlpha(20),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            isVerified ? Icons.verified : Icons.verified_outlined,
+            size: 12,
+            color: isVerified ? AppColors.success : AppColors.lightText,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            isVerified ? 'Verified' : 'Unverified',
+            style: TextStyle(
+              color: isVerified ? AppColors.success : AppColors.lightText,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 // --- User details bottom sheet ---
 class _UserDetailsSheet extends StatelessWidget {
   final UserModel user;
@@ -1006,6 +1061,60 @@ class _UserDetailsSheet extends StatelessWidget {
                               .toList(),
                         ),
                       ],
+                    ),
+                  ],
+                  // Resume
+                  if (user.seekerProfile!.resumeUrl.isNotEmpty) ...[
+                    const Divider(height: 24),
+                    GestureDetector(
+                      onTap: () async {
+                        final url = Uri.parse(user.seekerProfile!.resumeUrl);
+                        if (await canLaunchUrl(url)) {
+                          await launchUrl(url, mode: LaunchMode.externalApplication);
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: AppColors.primary.withValues(alpha: 0.2),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.description_outlined, color: AppColors.primary, size: 20),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Resume',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.darkText,
+                                    ),
+                                  ),
+                                  Text(
+                                    user.seekerProfile!.resumeName.isNotEmpty
+                                        ? user.seekerProfile!.resumeName
+                                        : 'View resume',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: AppColors.secondaryText,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Icon(Icons.open_in_new, size: 16, color: AppColors.primary),
+                          ],
+                        ),
+                      ),
                     ),
                   ],
                 ],

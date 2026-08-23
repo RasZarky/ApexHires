@@ -5,6 +5,7 @@ import 'package:apex_hires/features/auth/providers/auth_provider.dart';
 import 'package:apex_hires/models/user_model.dart';
 import 'package:apex_hires/core/theme/app_theme.dart';
 import 'package:apex_hires/core/widgets/common_widgets.dart';
+import 'package:apex_hires/services/notification_service.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -148,6 +149,10 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     }
 
     if (success && mounted) {
+      final user = context.read<AuthProvider>().user;
+      if (user != null) {
+        NotificationService().initialize(user.uid);
+      }
       if (_isSeeker) {
         Navigator.of(context).pushNamedAndRemoveUntil('/seeker_home', (route) => false);
       } else {
@@ -210,6 +215,10 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
           // Skip button in app bar
           TextButton(
             onPressed: () {
+              final user = context.read<AuthProvider>().user;
+              if (user != null) {
+                NotificationService().initialize(user.uid);
+              }
               if (_isSeeker) {
                 Navigator.of(context).pushNamedAndRemoveUntil('/seeker_home', (route) => false);
               } else {
@@ -663,6 +672,10 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
           Center(
             child: TextButton(
               onPressed: () {
+                final user = context.read<AuthProvider>().user;
+                if (user != null) {
+                  NotificationService().initialize(user.uid);
+                }
                 if (_isSeeker) {
                   Navigator.of(context).pushNamedAndRemoveUntil('/seeker_home', (route) => false);
                 } else {

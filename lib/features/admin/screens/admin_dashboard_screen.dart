@@ -728,9 +728,9 @@ class _UserRolePieChart extends StatelessWidget {
 
   Color _getRoleColor(String role) {
     switch (role) {
-      case 'job_seeker': return AppColors.accent;
-      case 'recruiter': return AppColors.primary;
-      case 'admin': return AppColors.shortlisted;
+      case 'job_seeker': return const Color(0xFF5D4037); // Dark brown
+      case 'recruiter': return const Color(0xFF2E7D32); // Green
+      case 'admin': return const Color(0xFFE65100); // Orange
       default: return AppColors.lightText;
     }
   }

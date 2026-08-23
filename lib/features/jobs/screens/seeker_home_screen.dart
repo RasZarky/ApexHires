@@ -17,9 +17,11 @@ class SeekerHomeScreen extends StatefulWidget {
 class _SeekerHomeScreenState extends State<SeekerHomeScreen> {
   int _currentIndex = 0;
 
-  final List<Widget> _screens = [
+  void _navigateToJobs() => setState(() => _currentIndex = 0);
+
+  late final List<Widget> _screens = [
     const JobSearchScreen(),
-    const ApplicationTrackerScreen(),
+    ApplicationTrackerScreen(onNavigateToJobs: _navigateToJobs),
     const ChatListScreen(),
     const ProfileScreen(),
   ];

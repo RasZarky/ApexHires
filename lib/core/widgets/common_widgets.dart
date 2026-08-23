@@ -266,13 +266,13 @@ class CustomSearchBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.transparent,
+      color: AppColors.surface,
       child: Container(
         height: 44,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
           color: AppColors.surface,
-          borderRadius: BorderRadius.circular(22),
+          borderRadius: BorderRadius.circular(10),
           border: Border.all(color: AppColors.divider.withValues(alpha: 0.5)),
           boxShadow: [
             BoxShadow(
@@ -302,6 +302,7 @@ class CustomSearchBar extends StatelessWidget {
                       cursorColor: AppColors.primary,
                       decoration: InputDecoration(
                         hintText: hintText,
+                        fillColor: AppColors.surface,
                         hintStyle: TextStyle(
                           color: AppColors.lightText.withValues(alpha: 0.6),
                           fontSize: 14,
