@@ -401,47 +401,150 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   }
 
   Widget _buildSkillsStep() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Skills',
-            style: Theme.of(context).textTheme.titleLarge,
+    final customSkillController = TextEditingController();
+    return StatefulBuilder(
+      builder: (context, setSkillsState) {
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Skills',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Select or type your key skills',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Selected: ${_selectedSkills.length}',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(height: 16),
+              // Custom skill input
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: customSkillController,
+                      decoration: InputDecoration(
+                        hintText: 'Add a custom skill...',
+                        hintStyle: TextStyle(
+                          color: AppColors.lightText.withValues(alpha: 0.7),
+                          fontSize: 14,
+                        ),
+                        isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 10),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: AppColors.divider),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: AppColors.divider),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                        ),
+                      ),
+                      onSubmitted: (value) {
+                        final skill = value.trim();
+                        if (skill.isNotEmpty && !_selectedSkills.contains(skill)) {
+                          setSkillsState(() {
+                            _selectedSkills.add(skill);
+                          });
+                          customSkillController.clear();
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () {
+                      final skill = customSkillController.text.trim();
+                      if (skill.isNotEmpty && !_selectedSkills.contains(skill)) {
+                        setSkillsState(() {
+                          _selectedSkills.add(skill);
+                        });
+                        customSkillController.clear();
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.add_rounded,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              // Selected custom skills (not from predefined list)
+              if (_selectedSkills
+                  .where((s) => !_availableSkills.contains(s))
+                  .isNotEmpty) ...[
+                const Text(
+                  'Your Skills',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.darkText,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: _selectedSkills
+                      .where((s) => !_availableSkills.contains(s))
+                      .map((skill) => SkillChip(
+                            skill: skill,
+                            selected: true,
+                            onTap: () {
+                              setSkillsState(() {
+                                _selectedSkills.remove(skill);
+                              });
+                            },
+                          ))
+                      .toList(),
+                ),
+                const SizedBox(height: 16),
+              ],
+              // Predefined skills
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: _availableSkills.map((skill) {
+                  return SkillChip(
+                    skill: skill,
+                    selected: _selectedSkills.contains(skill),
+                    onTap: () {
+                      setSkillsState(() {
+                        if (_selectedSkills.contains(skill)) {
+                          _selectedSkills.remove(skill);
+                        } else {
+                          _selectedSkills.add(skill);
+                        }
+                      });
+                    },
+                  );
+                }).toList(),
+              ),
+            ],
           ),
-          const SizedBox(height: 4),
-          Text(
-            'Select your key skills',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Selected: ${_selectedSkills.length}',
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: _availableSkills.map((skill) {
-              return SkillChip(
-                skill: skill,
-                selected: _selectedSkills.contains(skill),
-                onTap: () {
-                  setState(() {
-                    if (_selectedSkills.contains(skill)) {
-                      _selectedSkills.remove(skill);
-                    } else {
-                      _selectedSkills.add(skill);
-                    }
-                  });
-                },
-              );
-            }).toList(),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 

@@ -157,7 +157,7 @@ class _AdminJobsScreenState extends State<AdminJobsScreen> {
     );
   }
 
-  // ─── Mobile: card list ───
+  // --- Mobile: card list ---
   Widget _buildMobileJobList(List<JobModel> jobs) {
     return ListView.builder(
       padding: EdgeInsets.zero,
@@ -168,7 +168,7 @@ class _AdminJobsScreenState extends State<AdminJobsScreen> {
     );
   }
 
-  // ─── Desktop: table ───
+  // --- Desktop: table ---
   Widget _buildDesktopJobTable(List<JobModel> jobs) {
     return Container(
       decoration: BoxDecoration(
@@ -197,21 +197,21 @@ class _AdminJobsScreenState extends State<AdminJobsScreen> {
                             fontWeight: FontWeight.w600, fontSize: 13))),
                 Expanded(
                     flex: 1,
+                    child: Text('Posted On',
+                        style: TextStyle(
+                            fontWeight: FontWeight.w600, fontSize: 13))),
+                Expanded(
+                    flex: 1,
+                    child: Text('Applied Users',
+                        style: TextStyle(
+                            fontWeight: FontWeight.w600, fontSize: 13))),
+                Expanded(
+                    flex: 1,
                     child: Text('Status',
                         style: TextStyle(
                             fontWeight: FontWeight.w600, fontSize: 13))),
                 Expanded(
                     flex: 1,
-                    child: Text('Posted',
-                        style: TextStyle(
-                            fontWeight: FontWeight.w600, fontSize: 13))),
-                Expanded(
-                    flex: 1,
-                    child: Text('Apps',
-                        style: TextStyle(
-                            fontWeight: FontWeight.w600, fontSize: 13))),
-                Expanded(
-                    flex: 2,
                     child: Text('Actions',
                         style: TextStyle(
                             fontWeight: FontWeight.w600, fontSize: 13))),
@@ -232,7 +232,7 @@ class _AdminJobsScreenState extends State<AdminJobsScreen> {
   }
 }
 
-// ─── Mobile job card ───
+// --- Mobile job card ---
 class _MobileJobCard extends StatelessWidget {
   final JobModel job;
 
@@ -268,7 +268,7 @@ class _MobileJobCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${job.companyName} • ${job.location}',
+                      '${job.companyName} \u2022 ${job.location}',
                       style: const TextStyle(
                         color: AppColors.lightText,
                         fontSize: 13,
@@ -279,13 +279,60 @@ class _MobileJobCard extends StatelessWidget {
                 ),
               ),
               StatusBadge(status: job.status, small: true),
+              const SizedBox(width: 4),
+              PopupMenuButton<String>(
+                onSelected: (value) =>
+                    _handleAction(context, value, adminProvider),
+                icon: const Icon(Icons.more_vert, size: 20, color: AppColors.secondaryText),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 'view',
+                    child: Row(
+                      children: [
+                        Icon(Icons.visibility_outlined, size: 18, color: AppColors.secondaryText),
+                        SizedBox(width: 10),
+                        Text('View Details'),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'toggle',
+                    child: Row(
+                      children: [
+                        Icon(
+                          job.status == 'active'
+                              ? Icons.pause_circle_outline
+                              : Icons.play_circle_outline,
+                          size: 18,
+                          color: AppColors.warning,
+                        ),
+                        const SizedBox(width: 10),
+                        Text(job.status == 'active' ? 'Pause' : 'Activate'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'remove',
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete_outline, size: 18, color: AppColors.error),
+                        SizedBox(width: 10),
+                        Text('Remove', style: TextStyle(color: AppColors.error)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           Row(
             children: [
               Text(
-                'Posted ${DateFormat('MMM d').format(job.createdAt)}',
+                'Posted ${DateFormat('MMM d, yyyy').format(job.createdAt)}',
                 style: const TextStyle(
                   fontSize: 12,
                   color: AppColors.lightText,
@@ -300,7 +347,7 @@ class _MobileJobCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  '${job.applicationsCount} apps',
+                  '${job.applicationsCount} applicants',
                   style: const TextStyle(
                     fontSize: 12,
                     color: AppColors.secondaryText,
@@ -308,67 +355,77 @@ class _MobileJobCard extends StatelessWidget {
                   ),
                 ),
               ),
-              const Spacer(),
-              OutlinedButton(
-                onPressed: () async {
-                  await adminProvider.pauseJob(job.jobId);
-                },
-                style: OutlinedButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  minimumSize: Size.zero,
-                  textStyle: const TextStyle(fontSize: 11),
-                ),
-                child: Text(job.status == 'active' ? 'Pause' : 'Activate'),
-              ),
-              const SizedBox(width: 8),
-              OutlinedButton(
-                onPressed: () async {
-                  final confirm = await showDialog<bool>(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14)),
-                      title: const Text('Remove Job'),
-                      content: Text(
-                          'Are you sure you want to permanently remove "${job.title}"?'),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context, false),
-                          child: const Text('Cancel'),
-                        ),
-                        TextButton(
-                          onPressed: () => Navigator.pop(context, true),
-                          child: const Text('Remove',
-                              style: TextStyle(color: AppColors.error)),
-                        ),
-                      ],
-                    ),
-                  );
-                  if (confirm == true) {
-                    await adminProvider.removeJob(job.jobId);
-                  }
-                },
-                style: OutlinedButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  minimumSize: Size.zero,
-                  side: const BorderSide(color: AppColors.error),
-                  textStyle:
-                      const TextStyle(fontSize: 11, color: AppColors.error),
-                ),
-                child:
-                    const Text('Remove', style: TextStyle(color: AppColors.error)),
-              ),
             ],
           ),
         ],
       ),
     );
   }
+
+  void _handleAction(
+      BuildContext context, String value, AdminProvider adminProvider) {
+    switch (value) {
+      case 'view':
+        _showJobDetails(context, job);
+        break;
+      case 'toggle':
+        adminProvider.pauseJob(job.jobId);
+        break;
+      case 'remove':
+        _confirmRemove(context, adminProvider);
+        break;
+    }
+  }
+
+  void _showJobDetails(BuildContext context, JobModel job) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.8,
+        minChildSize: 0.3,
+        maxChildSize: 0.95,
+        expand: false,
+        builder: (context, scrollController) => _JobDetailsSheet(
+          job: job,
+          scrollController: scrollController,
+        ),
+      ),
+    );
+  }
+
+  void _confirmRemove(
+      BuildContext context, AdminProvider adminProvider) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        title: const Text('Remove Job'),
+        content: Text(
+            'Are you sure you want to permanently remove "${job.title}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child:
+                const Text('Remove', style: TextStyle(color: AppColors.error)),
+          ),
+        ],
+      ),
+    );
+    if (confirm == true) {
+      await adminProvider.removeJob(job.jobId);
+    }
+  }
 }
 
-// ─── Desktop job row ───
+// --- Desktop job row ---
 class _DesktopJobRow extends StatelessWidget {
   final JobModel job;
 
@@ -386,6 +443,7 @@ class _DesktopJobRow extends StatelessWidget {
       ),
       child: Row(
         children: [
+          // Job column
           Expanded(
             flex: 3,
             child: Column(
@@ -397,102 +455,445 @@ class _DesktopJobRow extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
                   ),
+                  overflow: TextOverflow.ellipsis,
                 ),
                 Text(
-                  '${job.companyName} • ${job.location}',
+                  '${job.companyName} \u2022 ${job.location}',
                   style: const TextStyle(
                     color: AppColors.lightText,
                     fontSize: 12,
                   ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
           ),
-          Expanded(
-            flex: 1,
-            child: StatusBadge(status: job.status, small: true),
-          ),
+          // Posted On column
           Expanded(
             flex: 1,
             child: Text(
-              DateFormat('MMM d').format(job.createdAt),
+              DateFormat('MMM d, yyyy').format(job.createdAt),
               style: const TextStyle(
                 fontSize: 13,
                 color: AppColors.secondaryText,
               ),
             ),
           ),
+          // Applied Users column
           Expanded(
             flex: 1,
-            child: Text(
-              '${job.applicationsCount}',
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceVariant,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                '${job.applicationsCount}',
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.darkText,
+                ),
+                textAlign: TextAlign.center,
               ),
             ),
           ),
+          // Status column
           Expanded(
-            flex: 2,
-            child: Row(
-              children: [
-                OutlinedButton(
-                  onPressed: () async {
-                    await adminProvider.pauseJob(job.jobId);
-                  },
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 6),
-                    minimumSize: Size.zero,
-                    textStyle: const TextStyle(fontSize: 12),
-                  ),
-                  child: Text(
-                    job.status == 'active' ? 'Pause' : 'Activate',
+            flex: 1,
+            child: StatusBadge(status: job.status, small: true),
+          ),
+          // Actions column (3-dot menu)
+          Expanded(
+            flex: 1,
+            child: PopupMenuButton<String>(
+              onSelected: (value) {
+                switch (value) {
+                  case 'view':
+                    _showJobDetails(context, job);
+                    break;
+                  case 'toggle':
+                    adminProvider.pauseJob(job.jobId);
+                    break;
+                  case 'remove':
+                    _confirmRemove(context, adminProvider);
+                    break;
+                }
+              },
+              icon: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Icon(Icons.more_vert, size: 20, color: AppColors.secondaryText),
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'view',
+                  child: Row(
+                    children: [
+                      Icon(Icons.visibility_outlined, size: 18, color: AppColors.secondaryText),
+                      SizedBox(width: 10),
+                      Text('View Details'),
+                    ],
                   ),
                 ),
-                const SizedBox(width: 8),
-                OutlinedButton(
-                  onPressed: () async {
-                    final confirm = await showDialog<bool>(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14)),
-                        title: const Text('Remove Job'),
-                        content: Text(
-                            'Are you sure you want to permanently remove "${job.title}"?'),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context, false),
-                            child: const Text('Cancel'),
-                          ),
-                          TextButton(
-                            onPressed: () => Navigator.pop(context, true),
-                            child: const Text('Remove',
-                                style: TextStyle(color: AppColors.error)),
-                          ),
-                        ],
+                PopupMenuItem(
+                  value: 'toggle',
+                  child: Row(
+                    children: [
+                      Icon(
+                        job.status == 'active'
+                            ? Icons.pause_circle_outline
+                            : Icons.play_circle_outline,
+                        size: 18,
+                        color: AppColors.warning,
                       ),
-                    );
-                    if (confirm == true) {
-                      await adminProvider.removeJob(job.jobId);
-                    }
-                  },
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 6),
-                    minimumSize: Size.zero,
-                    side: const BorderSide(color: AppColors.error),
-                    textStyle: const TextStyle(fontSize: 12),
+                      const SizedBox(width: 10),
+                      Text(job.status == 'active' ? 'Pause' : 'Activate'),
+                    ],
                   ),
-                  child: const Text('Remove',
-                      style: TextStyle(color: AppColors.error)),
+                ),
+                const PopupMenuItem(
+                  value: 'remove',
+                  child: Row(
+                    children: [
+                      Icon(Icons.delete_outline, size: 18, color: AppColors.error),
+                      SizedBox(width: 10),
+                      Text('Remove', style: TextStyle(color: AppColors.error)),
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
         ],
       ),
+    );
+  }
+
+  void _showJobDetails(BuildContext context, JobModel job) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.8,
+        minChildSize: 0.3,
+        maxChildSize: 0.95,
+        expand: false,
+        builder: (context, scrollController) => _JobDetailsSheet(
+          job: job,
+          scrollController: scrollController,
+        ),
+      ),
+    );
+  }
+
+  void _confirmRemove(
+      BuildContext context, AdminProvider adminProvider) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        title: const Text('Remove Job'),
+        content: Text(
+            'Are you sure you want to permanently remove "${job.title}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child:
+                const Text('Remove', style: TextStyle(color: AppColors.error)),
+          ),
+        ],
+      ),
+    );
+    if (confirm == true) {
+      await adminProvider.removeJob(job.jobId);
+    }
+  }
+}
+
+// --- Job details bottom sheet ---
+class _JobDetailsSheet extends StatelessWidget {
+  final JobModel job;
+  final ScrollController scrollController;
+
+  const _JobDetailsSheet({
+    required this.job,
+    required this.scrollController,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: ListView(
+        controller: scrollController,
+        padding: const EdgeInsets.all(24),
+        children: [
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.divider,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // Job title and company
+          Text(
+            job.title,
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              color: AppColors.darkText,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            job.companyName,
+            style: const TextStyle(
+              fontSize: 16,
+              color: AppColors.secondaryText,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Status and applications count row
+          Row(
+            children: [
+              StatusBadge(status: job.status),
+              const SizedBox(width: 12),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceVariant,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '${job.applicationsCount} applicants',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.secondaryText,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // Details card
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceVariant,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              children: [
+                _DetailRow(
+                  icon: Icons.location_on_outlined,
+                  label: 'Location',
+                  value: job.location,
+                ),
+                const Divider(height: 24),
+                _DetailRow(
+                  icon: Icons.access_time_outlined,
+                  label: 'Job Type',
+                  value: job.jobType,
+                ),
+                const Divider(height: 24),
+                _DetailRow(
+                  icon: Icons.trending_up_outlined,
+                  label: 'Experience',
+                  value: job.experienceLevel,
+                ),
+                const Divider(height: 24),
+                _DetailRow(
+                  icon: Icons.attach_money_outlined,
+                  label: 'Salary',
+                  value: job.salaryDisplay,
+                  valueColor: AppColors.primary,
+                ),
+                const Divider(height: 24),
+                _DetailRow(
+                  icon: Icons.calendar_today_outlined,
+                  label: 'Posted',
+                  value: DateFormat('MMMM d, yyyy').format(job.createdAt),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // Description
+          if (job.description.isNotEmpty) ...[
+            const Text(
+              'Description',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: AppColors.darkText,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              job.description,
+              style: const TextStyle(
+                fontSize: 14,
+                color: AppColors.secondaryText,
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 20),
+          ],
+
+          // Skills
+          if (job.skillsRequired.isNotEmpty) ...[
+            const Text(
+              'Required Skills',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: AppColors.darkText,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: job.skillsRequired
+                  .map((skill) => Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withAlpha(15),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          skill,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ))
+                  .toList(),
+            ),
+            const SizedBox(height: 20),
+          ],
+
+          // Screening questions
+          if (job.screeningQuestions.isNotEmpty) ...[
+            const Text(
+              'Screening Questions',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: AppColors.darkText,
+              ),
+            ),
+            const SizedBox(height: 8),
+            ...job.screeningQuestions.map((q) => Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceVariant,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        q.isRequired
+                            ? Icons.check_circle_outline
+                            : Icons.circle_outlined,
+                        size: 16,
+                        color: q.isRequired
+                            ? AppColors.primary
+                            : AppColors.lightText,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          q.questionText,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: AppColors.darkText,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )),
+          ],
+          const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+}
+
+class _DetailRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color? valueColor;
+
+  const _DetailRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+    this.valueColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: AppColors.lightText),
+        const SizedBox(width: 10),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 13,
+            color: AppColors.lightText,
+          ),
+        ),
+        const Spacer(),
+        Flexible(
+          child: Text(
+            value,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: valueColor ?? AppColors.darkText,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
     );
   }
 }

@@ -75,6 +75,34 @@ class AdminProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> unblockUser(String uid) async {
+    try {
+      await _firestoreService.unblockUser(uid);
+      await _sendToUser(
+        targetUserId: uid,
+        title: '✅ Account Unblocked',
+        body: 'Your account has been unblocked. You can now sign in.',
+        type: 'user_unblocked',
+      );
+    } catch (e) {
+      _setError(e.toString());
+    }
+  }
+
+  Future<void> recoverDeletedUser(String uid) async {
+    try {
+      await _firestoreService.recoverDeletedUser(uid);
+      await _sendToUser(
+        targetUserId: uid,
+        title: '♻️ Account Recovered',
+        body: 'Your account has been recovered by an administrator. You can now sign in.',
+        type: 'user_recovered',
+      );
+    } catch (e) {
+      _setError(e.toString());
+    }
+  }
+
   // Admin management
   Future<bool> createAdminAccount({
     required String email,

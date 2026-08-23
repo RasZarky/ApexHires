@@ -29,6 +29,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   bool _isSaving = false;
   File? _avatarFile;
   File? _resumeFile;
+  final _customSkillController = TextEditingController();
 
   final List<String> _availableSkills = [
     'Flutter', 'Dart', 'React', 'Angular', 'Vue.js', 'Node.js',
@@ -69,6 +70,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _companyNameController.dispose();
     _companyWebsiteController.dispose();
     _designationController.dispose();
+    _customSkillController.dispose();
     super.dispose();
   }
 
@@ -315,6 +317,103 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
               // Skills
               _FieldLabel('Skills (${_selectedSkills.length} selected)'),
+              // Custom skill input
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _customSkillController,
+                      decoration: InputDecoration(
+                        hintText: 'Add a custom skill...',
+                        hintStyle: TextStyle(
+                          color: AppColors.lightText.withValues(alpha: 0.7),
+                          fontSize: 14,
+                        ),
+                        isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 10),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: AppColors.divider),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: AppColors.divider),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                        ),
+                      ),
+                      onSubmitted: (value) {
+                        final skill = value.trim();
+                        if (skill.isNotEmpty && !_selectedSkills.contains(skill)) {
+                          setState(() {
+                            _selectedSkills.add(skill);
+                          });
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () {
+                      final skill = _customSkillController.text.trim();
+                      if (skill.isNotEmpty && !_selectedSkills.contains(skill)) {
+                        setState(() {
+                          _selectedSkills.add(skill);
+                        });
+                        _customSkillController.clear();
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.add_rounded,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              // Selected custom skills (not from predefined list)
+              if (_selectedSkills
+                  .where((s) => !_availableSkills.contains(s))
+                  .isNotEmpty) ...[
+                const Text(
+                  'Your Skills',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.darkText,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: _selectedSkills
+                      .where((s) => !_availableSkills.contains(s))
+                      .map((skill) => SkillChip(
+                            skill: skill,
+                            selected: true,
+                            onTap: () {
+                              setState(() {
+                                _selectedSkills.remove(skill);
+                              });
+                            },
+                          ))
+                      .toList(),
+                ),
+                const SizedBox(height: 12),
+              ],
+              // Predefined skills
               Wrap(
                 spacing: 8,
                 runSpacing: 8,

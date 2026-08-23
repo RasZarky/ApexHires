@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:apex_hires/features/auth/providers/auth_provider.dart';
 import 'package:apex_hires/core/theme/app_theme.dart';
@@ -177,7 +178,79 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 24),
+                // Forgot Password
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () async {
+                      final emailController = TextEditingController();
+                      final resetEmail = await showDialog<String>(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          title: const Text('Reset Password'),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text(
+                                'Enter your email to receive a password reset link.',
+                              ),
+                              const SizedBox(height: 16),
+                              TextField(
+                                controller: emailController,
+                                keyboardType: TextInputType.emailAddress,
+                                decoration: const InputDecoration(
+                                  hintText: 'Email address',
+                                  isDense: true,
+                                ),
+                              ),
+                            ],
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('Cancel'),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, emailController.text.trim()),
+                              child: const Text('Send Reset Link'),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (resetEmail != null && resetEmail.isNotEmpty && mounted) {
+                        final authProvider = context.read<AuthProvider>();
+                        final success = await authProvider.sendPasswordResetEmail(resetEmail);
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                success
+                                    ? 'Password reset email sent to $resetEmail'
+                                    : 'Failed to send reset email',
+                              ),
+                              backgroundColor: success ? AppColors.success : AppColors.error,
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          );
+                        }
+                      }
+                    },
+                    child: const Text(
+                      'Forgot Password?',
+                      style: TextStyle(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
 
                 // Sign In Button
                 Consumer<AuthProvider>(
@@ -220,10 +293,34 @@ class _LoginScreenState extends State<LoginScreen> {
                   builder: (context, auth, _) {
                     return SizedBox(
                       width: double.infinity,
-                      child: OutlinedButton.icon(
+                      child: OutlinedButton(
                         onPressed: auth.isLoading ? null : _handleGoogleLogin,
-                        icon: const Icon(Icons.g_mobiledata, size: 24),
-                        label: const Text('Continue with Google'),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                          side: const BorderSide(color: AppColors.divider, width: 1.5),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SvgPicture.asset(
+                              'assets/icons/google_logo.svg',
+                              height: 20,
+                              width: 20,
+                            ),
+                            const SizedBox(width: 12),
+                            const Text(
+                              'Continue with Google',
+                              style: TextStyle(
+                                color: AppColors.darkText,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   },

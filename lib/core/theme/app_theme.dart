@@ -3,36 +3,36 @@ import 'package:google_fonts/google_fonts.dart';
 
 class AppColors {
   // Primary
-  static const Color primary = Color(0xFF0A66C2);
-  static const Color primaryDark = Color(0xFF004182);
-  static const Color primaryLight = Color(0xFF3D8FE0);
+  static const Color primary = Color(0xFF6D4C41);
+  static const Color primaryDark = Color(0xFF4E342E);
+  static const Color primaryLight = Color(0xFF8D6E63);
 
   // Neutral
-  static const Color darkText = Color(0xFF0F172A);
-  static const Color secondaryText = Color(0xFF475569);
-  static const Color lightText = Color(0xFF94A3B8);
-  static const Color divider = Color(0xFFE2E8F0);
+  static const Color darkText = Color(0xFF2C1810);
+  static const Color secondaryText = Color(0xFF5D4037);
+  static const Color lightText = Color(0xFFA1887F);
+  static const Color divider = Color(0xFFD7CCC8);
 
   // Accent
-  static const Color accent = Color(0xFF0EA5E9);
+  static const Color accent = Color(0xFF8D6E63);
 
   // Background
-  static const Color background = Color(0xFFF8FAFC);
+  static const Color background = Color(0xFFFAF5F0);
   static const Color surface = Color(0xFFFFFFFF);
-  static const Color surfaceVariant = Color(0xFFF1F5F9);
+  static const Color surfaceVariant = Color(0xFFF5F0EB);
 
   // Pipeline Status
-  static const Color applied = Color(0xFF3B82F6);
-  static const Color shortlisted = Color(0xFF8B5CF6);
-  static const Color interviewing = Color(0xFFF59E0B);
-  static const Color hired = Color(0xFF10B981);
-  static const Color rejected = Color(0xFFEF4444);
+  static const Color applied = Color(0xFF6D4C41);
+  static const Color shortlisted = Color(0xFF8D6E63);
+  static const Color interviewing = Color(0xFFE65100);
+  static const Color hired = Color(0xFF2E7D32);
+  static const Color rejected = Color(0xFFC62828);
 
   // Utility
-  static const Color success = Color(0xFF10B981);
-  static const Color error = Color(0xFFEF4444);
-  static const Color warning = Color(0xFFF59E0B);
-  static const Color info = Color(0xFF3B82F6);
+  static const Color success = Color(0xFF2E7D32);
+  static const Color error = Color(0xFFC62828);
+  static const Color warning = Color(0xFFE65100);
+  static const Color info = Color(0xFF6D4C41);
 
   static Color getStatusColor(String status) {
     switch (status) {
@@ -81,7 +81,7 @@ class AppTheme {
       colorScheme: const ColorScheme.light(
         primary: AppColors.primary,
         onPrimary: Colors.white,
-        secondary: AppColors.accent,
+        secondary: AppColors.primaryLight,
         onSecondary: Colors.white,
         surface: AppColors.surface,
         onSurface: AppColors.darkText,

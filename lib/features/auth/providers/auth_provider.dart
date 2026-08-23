@@ -200,6 +200,23 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  // Delete account (soft delete with reason)
+  Future<bool> deleteAccount({String reason = ''}) async {
+    _setLoading(true);
+    _setError(null);
+    try {
+      if (_user == null) return false;
+      await _auth.deleteAccount(userId: _user!.uid, reason: reason);
+      _user = null;
+      _setLoading(false);
+      return true;
+    } catch (e) {
+      _setError(e.toString());
+      _setLoading(false);
+      return false;
+    }
+  }
+
   // Developer mode
   void unlockDeveloperMode() {
     _developerUnlocked = true;
@@ -223,6 +240,12 @@ class AuthProvider extends ChangeNotifier {
   }
 
   String _parseAuthError(String error) {
+    if (error.contains('blocked')) {
+      return 'Your account has been blocked. Please contact support.';
+    }
+    if (error.contains('deleted')) {
+      return 'Your account has been deleted. Please contact support to recover it.';
+    }
     if (error.contains('user-not-found')) {
       return 'No account found with this email.';
     }
@@ -239,5 +262,17 @@ class AuthProvider extends ChangeNotifier {
       return 'Network error. Check your connection.';
     }
     return 'An error occurred. Please try again.';
+  }
+
+  // Send password reset email
+  Future<bool> sendPasswordResetEmail(String email) async {
+    _setError(null);
+    try {
+      await _auth.sendPasswordResetEmail(email);
+      return true;
+    } catch (e) {
+      _setError(_parseAuthError(e.toString()));
+      return false;
+    }
   }
 }

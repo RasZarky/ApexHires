@@ -241,15 +241,23 @@ class _JobSearchScreenState extends State<JobSearchScreen> {
                 GestureDetector(
                   onTap: _showFilterSheet,
                   child: Container(
-                    padding: const EdgeInsets.all(12),
+                    height: 44,
+                    width: 44,
                     decoration: BoxDecoration(
                       color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(22),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withValues(alpha: 0.25),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
                     child: const Icon(
-                      Icons.tune,
+                      Icons.tune_rounded,
                       color: Colors.white,
-                      size: 22,
+                      size: 20,
                     ),
                   ),
                 ),
@@ -322,11 +330,17 @@ class _JobSearchScreenState extends State<JobSearchScreen> {
                     final jobs = snapshot.data ?? [];
 
                     if (jobs.isEmpty) {
-                      return const EmptyState(
+                      return EmptyState(
                         icon: Icons.work_off_outlined,
                         title: 'No jobs found',
                         subtitle:
                             'Try adjusting your search filters or check back later',
+                        actionLabel: 'Clear Filters',
+                        onAction: () {
+                          jobProvider.clearFilters();
+                          _searchController.clear();
+                          _locationController.clear();
+                        },
                       );
                     }
 

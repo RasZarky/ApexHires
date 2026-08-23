@@ -471,6 +471,20 @@ class FirestoreService {
     });
   }
 
+  Future<void> unblockUser(String uid) async {
+    await _firestore.collection('users').doc(uid).update({
+      'is_blocked': false,
+    });
+  }
+
+  Future<void> recoverDeletedUser(String uid) async {
+    await _firestore.collection('users').doc(uid).update({
+      'is_deleted': false,
+      'deleted_at': null,
+      'deleted_reason': '',
+    });
+  }
+
   Future<void> createAdminAccount({
     required String uid,
     required String email,

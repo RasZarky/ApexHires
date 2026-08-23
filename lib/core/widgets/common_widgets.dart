@@ -246,9 +246,7 @@ class ProfileAvatar extends StatelessWidget {
       ),
     );
   }
-}
-
-// Custom Search Bar
+}// Custom Search Bar – slim, modern design
 class CustomSearchBar extends StatelessWidget {
   final String hintText;
   final ValueChanged<String> onChanged;
@@ -267,46 +265,76 @@ class CustomSearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
+    return Material(
+      color: Colors.transparent,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        height: 44,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
-          color: AppColors.surfaceVariant,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.divider),
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(color: AppColors.divider.withValues(alpha: 0.5)),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.06),
+              blurRadius: 12,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Row(
           children: [
-            const Icon(Icons.search, color: AppColors.lightText, size: 20),
-            const SizedBox(width: 12),
+            const Icon(Icons.search_rounded, color: AppColors.primary, size: 20),
+            const SizedBox(width: 10),
             Expanded(
               child: readOnly
                   ? Text(
                       hintText,
                       style: const TextStyle(
                         color: AppColors.lightText,
-                        fontSize: 15,
+                        fontSize: 14,
                       ),
                     )
                   : TextField(
                       controller: controller,
                       onChanged: onChanged,
                       readOnly: readOnly,
+                      cursorColor: AppColors.primary,
                       decoration: InputDecoration(
                         hintText: hintText,
+                        hintStyle: TextStyle(
+                          color: AppColors.lightText.withValues(alpha: 0.6),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                        ),
                         border: InputBorder.none,
                         enabledBorder: InputBorder.none,
                         focusedBorder: InputBorder.none,
+                        isDense: true,
                         contentPadding: EdgeInsets.zero,
-                        hintStyle: const TextStyle(
-                          color: AppColors.lightText,
-                          fontSize: 15,
+                        suffixIcon: (controller != null &&
+                                controller!.text.isNotEmpty)
+                            ? GestureDetector(
+                                onTap: () {
+                                  controller!.clear();
+                                  onChanged('');
+                                },
+                                child: const Icon(
+                                  Icons.close_rounded,
+                                  size: 18,
+                                  color: AppColors.lightText,
+                                ),
+                              )
+                            : null,
+                        suffixIconConstraints: const BoxConstraints(
+                          minWidth: 0,
+                          minHeight: 0,
                         ),
                       ),
                       style: const TextStyle(
                         color: AppColors.darkText,
-                        fontSize: 15,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
                       ),
                     ),
             ),

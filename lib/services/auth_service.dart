@@ -76,7 +76,14 @@ class AuthService {
       final doc =
           await _firestore.collection('users').doc(user.uid).get();
       if (!doc.exists) return null;
-      return UserModel.fromMap(doc.data()!);
+      final userModel = UserModel.fromMap(doc.data()!);
+      if (userModel.isBlocked) {
+        throw Exception('blocked');
+      }
+      if (userModel.isDeleted) {
+        throw Exception('deleted');
+      }
+      return userModel;
     } catch (e) {
       rethrow;
     }
@@ -104,7 +111,18 @@ class AuthService {
       final doc =
           await _firestore.collection('users').doc(user.uid).get();
       if (doc.exists) {
-        return UserModel.fromMap(doc.data()!);
+        final userModel = UserModel.fromMap(doc.data()!);
+        if (userModel.isBlocked) {
+          await _googleSignIn.signOut();
+          await _auth.signOut();
+          throw Exception('blocked');
+        }
+        if (userModel.isDeleted) {
+          await _googleSignIn.signOut();
+          await _auth.signOut();
+          throw Exception('deleted');
+        }
+        return userModel;
       }
 
       // New user — only create if a role was provided (signup flow)
@@ -148,6 +166,21 @@ class AuthService {
   // Sign Out
   Future<void> signOut() async {
     await _googleSignIn.signOut();
+    await _auth.signOut();
+  }
+
+  // Send password reset email
+  Future<void> sendPasswordResetEmail(String email) async {
+    await _auth.sendPasswordResetEmail(email: email);
+  }
+
+  // Delete account (soft delete)
+  Future<void> deleteAccount({required String userId, String reason = ''}) async {
+    await _firestore.collection('users').doc(userId).update({
+      'is_deleted': true,
+      'deleted_at': Timestamp.fromDate(DateTime.now()),
+      'deleted_reason': reason,
+    });
     await _auth.signOut();
   }
 }

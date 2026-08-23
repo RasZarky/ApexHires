@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:apex_hires/features/auth/providers/auth_provider.dart';
 import 'package:apex_hires/models/user_model.dart';
@@ -201,7 +202,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   builder: (context, auth, _) {
                     return SizedBox(
                       width: double.infinity,
-                      child: OutlinedButton.icon(
+                      child: OutlinedButton(
                         onPressed: auth.isLoading
                             ? null
                             : () async {
@@ -213,8 +214,32 @@ class _SignupScreenState extends State<SignupScreen> {
                                       .pushReplacementNamed('/profile_setup');
                                 }
                               },
-                        icon: const Icon(Icons.g_mobiledata, size: 24),
-                        label: const Text('Sign up with Google'),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                          side: const BorderSide(color: AppColors.divider, width: 1.5),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SvgPicture.asset(
+                              'assets/icons/google_logo.svg',
+                              height: 20,
+                              width: 20,
+                            ),
+                            const SizedBox(width: 12),
+                            const Text(
+                              'Sign up with Google',
+                              style: TextStyle(
+                                color: AppColors.darkText,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   },

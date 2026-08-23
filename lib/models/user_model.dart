@@ -9,6 +9,10 @@ class UserModel {
   final String avatarUrl;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final bool isBlocked;
+  final bool isDeleted;
+  final DateTime? deletedAt;
+  final String deletedReason;
   final SeekerProfile? seekerProfile;
   final RecruiterProfile? recruiterProfile;
 
@@ -19,6 +23,10 @@ class UserModel {
     required this.fullName,
     this.phoneNumber = '',
     this.avatarUrl = '',
+    this.isBlocked = false,
+    this.isDeleted = false,
+    this.deletedAt,
+    this.deletedReason = '',
     required this.createdAt,
     required this.updatedAt,
     this.seekerProfile,
@@ -33,6 +41,10 @@ class UserModel {
       fullName: map['full_name'] ?? '',
       phoneNumber: map['phone_number'] ?? '',
       avatarUrl: map['avatar_url'] ?? '',
+      isBlocked: map['is_blocked'] ?? false,
+      isDeleted: map['is_deleted'] ?? false,
+      deletedAt: (map['deleted_at'] as Timestamp?)?.toDate(),
+      deletedReason: map['deleted_reason'] ?? '',
       createdAt: (map['created_at'] as Timestamp?)?.toDate() ?? DateTime.now(),
       updatedAt: (map['updated_at'] as Timestamp?)?.toDate() ?? DateTime.now(),
       seekerProfile: map['seeker_profile'] != null
@@ -52,6 +64,10 @@ class UserModel {
       'full_name': fullName,
       'phone_number': phoneNumber,
       'avatar_url': avatarUrl,
+      'is_blocked': isBlocked,
+      'is_deleted': isDeleted,
+      'deleted_at': deletedAt != null ? Timestamp.fromDate(deletedAt!) : null,
+      'deleted_reason': deletedReason,
       'created_at': Timestamp.fromDate(createdAt),
       'updated_at': Timestamp.fromDate(updatedAt),
       'seeker_profile': seekerProfile?.toMap(),
@@ -63,6 +79,10 @@ class UserModel {
     String? fullName,
     String? phoneNumber,
     String? avatarUrl,
+    bool? isBlocked,
+    bool? isDeleted,
+    DateTime? deletedAt,
+    String? deletedReason,
     SeekerProfile? seekerProfile,
     RecruiterProfile? recruiterProfile,
   }) {
@@ -73,6 +93,10 @@ class UserModel {
       fullName: fullName ?? this.fullName,
       phoneNumber: phoneNumber ?? this.phoneNumber,
       avatarUrl: avatarUrl ?? this.avatarUrl,
+      isBlocked: isBlocked ?? this.isBlocked,
+      isDeleted: isDeleted ?? this.isDeleted,
+      deletedAt: deletedAt ?? this.deletedAt,
+      deletedReason: deletedReason ?? this.deletedReason,
       createdAt: createdAt,
       updatedAt: DateTime.now(),
       seekerProfile: seekerProfile ?? this.seekerProfile,

@@ -109,7 +109,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen>
                   colors: [
                     AppColors.primaryDark,
                     AppColors.primary,
-                    Color(0xFF1976D2),
+                    AppColors.primaryLight,
                   ],
                 ),
               ),

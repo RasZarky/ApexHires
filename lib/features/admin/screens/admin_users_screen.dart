@@ -51,7 +51,8 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                     hintText: 'Search by name or email...',
                     onChanged: (v) => setState(() => _searchQuery = v),
                   ),
-                  const SizedBox(height: 12),                    DropdownButtonFormField<String>(
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
                     initialValue: _roleFilter,
                     decoration: const InputDecoration(
                       contentPadding:
@@ -95,8 +96,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                             value: 'job_seeker', child: Text('Job Seekers')),
                         DropdownMenuItem(
                             value: 'recruiter', child: Text('Recruiters')),
-                        DropdownMenuItem(
-                            value: 'admin', child: Text('Admins')),
+                        DropdownMenuItem(value: 'admin', child: Text('Admins')),
                       ],
                       onChanged: (v) =>
                           setState(() => _roleFilter = v ?? 'all'),
@@ -159,7 +159,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     );
   }
 
-  // ─── Mobile: card list ───
+  // --- Mobile: card list ---
   Widget _buildMobileUserList(List<UserModel> users) {
     return ListView.builder(
       padding: EdgeInsets.zero,
@@ -171,7 +171,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     );
   }
 
-  // ─── Desktop: table ───
+  // --- Desktop: table ---
   Widget _buildDesktopUserTable(List<UserModel> users) {
     return Container(
       decoration: BoxDecoration(
@@ -206,11 +206,16 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                             fontWeight: FontWeight.w600, fontSize: 13))),
                 Expanded(
                     flex: 1,
-                    child: Text('Joined',
+                    child: Text('Registered On',
                         style: TextStyle(
                             fontWeight: FontWeight.w600, fontSize: 13))),
                 Expanded(
-                    flex: 2,
+                    flex: 1,
+                    child: Text('Status',
+                        style: TextStyle(
+                            fontWeight: FontWeight.w600, fontSize: 13))),
+                Expanded(
+                    flex: 1,
                     child: Text('Actions',
                         style: TextStyle(
                             fontWeight: FontWeight.w600, fontSize: 13))),
@@ -232,7 +237,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
   }
 }
 
-// ─── Mobile user card ───
+// --- Mobile user card ---
 class _MobileUserCard extends StatelessWidget {
   final UserModel user;
 
@@ -241,22 +246,6 @@ class _MobileUserCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final adminProvider = context.read<AdminProvider>();
-
-    Color roleColor;
-    String roleLabel;
-    switch (user.role) {
-      case 'recruiter':
-        roleColor = AppColors.primary;
-        roleLabel = 'Recruiter';
-        break;
-      case 'admin':
-        roleColor = AppColors.shortlisted;
-        roleLabel = 'Admin';
-        break;
-      default:
-        roleColor = AppColors.accent;
-        roleLabel = 'Job Seeker';
-    }
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -302,94 +291,96 @@ class _MobileUserCard extends StatelessWidget {
                   ],
                 ),
               ),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: roleColor.withAlpha(20),
-                  borderRadius: BorderRadius.circular(6),
+              // 3-dot action menu
+              PopupMenuButton<String>(
+                onSelected: (value) => _handleAction(context, value, adminProvider),
+                icon: const Icon(Icons.more_vert, size: 20, color: AppColors.secondaryText),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                child: Text(
-                  roleLabel,
-                  style: TextStyle(
-                    color: roleColor,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 'view',
+                    child: Row(
+                      children: [
+                        Icon(Icons.visibility_outlined, size: 18, color: AppColors.secondaryText),
+                        SizedBox(width: 10),
+                        Text('View Details'),
+                      ],
+                    ),
                   ),
-                ),
+                  if (user.role == 'recruiter')
+                    PopupMenuItem(
+                      value: 'verify',
+                      child: Row(
+                        children: [
+                          Icon(
+                            user.recruiterProfile?.isVerified == true
+                                ? Icons.verified_outlined
+                                : Icons.verified,
+                            size: 18,
+                            color: user.recruiterProfile?.isVerified == true
+                                ? AppColors.warning
+                                : AppColors.success,
+                          ),
+                          const SizedBox(width: 10),
+                          Text(user.recruiterProfile?.isVerified == true
+                              ? 'Unverify'
+                              : 'Verify'),
+                        ],
+                      ),
+                    ),
+                  if (user.isBlocked)
+                    const PopupMenuItem(
+                      value: 'unblock',
+                      child: Row(
+                        children: [
+                          Icon(Icons.lock_open, size: 18, color: AppColors.success),
+                          SizedBox(width: 10),
+                          Text('Unblock', style: TextStyle(color: AppColors.success)),
+                        ],
+                      ),
+                    ),
+                  if (!user.isBlocked)
+                    const PopupMenuItem(
+                      value: 'block',
+                      child: Row(
+                        children: [
+                          Icon(Icons.block, size: 18, color: AppColors.error),
+                          SizedBox(width: 10),
+                          Text('Block', style: TextStyle(color: AppColors.error)),
+                        ],
+                      ),
+                    ),
+                  if (user.isDeleted)
+                    const PopupMenuItem(
+                      value: 'recover',
+                      child: Row(
+                        children: [
+                          Icon(Icons.replay, size: 18, color: AppColors.success),
+                          SizedBox(width: 10),
+                          Text('Recover Account', style: TextStyle(color: AppColors.success)),
+                        ],
+                      ),
+                    ),
+                ],
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          Row(
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 6,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
+              _RoleBadge(role: user.role),
+              _StatusIndicator(isBlocked: user.isBlocked, isDeleted: user.isDeleted),
               Text(
-                'Joined ${DateFormat('MMM d, yyyy').format(user.createdAt)}',
+                DateFormat('MMM d, yyyy').format(user.createdAt),
                 style: const TextStyle(
                   fontSize: 12,
                   color: AppColors.lightText,
                 ),
-              ),
-              const Spacer(),
-              if (user.role == 'recruiter')
-                OutlinedButton(
-                  onPressed: () async {
-                    if (user.recruiterProfile?.isVerified == true) {
-                      await adminProvider.unverifyRecruiter(user.uid);
-                    } else {
-                      await adminProvider.verifyRecruiter(user.uid);
-                    }
-                  },
-                  style: OutlinedButton.styleFrom(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    minimumSize: Size.zero,
-                    textStyle: const TextStyle(fontSize: 11),
-                  ),
-                  child: Text(
-                    user.recruiterProfile?.isVerified == true
-                        ? 'Unverify'
-                        : 'Verify',
-                  ),
-                ),
-              const SizedBox(width: 8),
-              OutlinedButton(
-                onPressed: () async {
-                  final confirm = await showDialog<bool>(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14)),
-                      title: const Text('Block User'),
-                      content: Text(
-                          'Are you sure you want to block ${user.fullName}?'),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context, false),
-                          child: const Text('Cancel'),
-                        ),
-                        TextButton(
-                          onPressed: () => Navigator.pop(context, true),
-                          child: const Text('Block',
-                              style: TextStyle(color: AppColors.error)),
-                        ),
-                      ],
-                    ),
-                  );
-                  if (confirm == true) {
-                    await adminProvider.blockUser(user.uid);
-                  }
-                },
-                style: OutlinedButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  minimumSize: Size.zero,
-                  side: const BorderSide(color: AppColors.error),
-                  textStyle:
-                      const TextStyle(fontSize: 11, color: AppColors.error),
-                ),
-                child:
-                    const Text('Block', style: TextStyle(color: AppColors.error)),
               ),
             ],
           ),
@@ -397,9 +388,101 @@ class _MobileUserCard extends StatelessWidget {
       ),
     );
   }
+
+  void _handleAction(BuildContext context, String value, AdminProvider adminProvider) {
+    switch (value) {
+      case 'view':
+        _showUserDetails(context, user);
+        break;
+      case 'verify':
+        if (user.recruiterProfile?.isVerified == true) {
+          adminProvider.unverifyRecruiter(user.uid);
+        } else {
+          adminProvider.verifyRecruiter(user.uid);
+        }
+        break;
+      case 'block':
+        _confirmBlock(context, adminProvider);
+        break;
+      case 'unblock':
+        adminProvider.unblockUser(user.uid);
+        break;
+      case 'recover':
+        _confirmRecover(context, adminProvider);
+        break;
+    }
+  }
+
+  void _showUserDetails(BuildContext context, UserModel user) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        minChildSize: 0.3,
+        maxChildSize: 0.9,
+        expand: false,
+        builder: (context, scrollController) => _UserDetailsSheet(
+          user: user,
+          scrollController: scrollController,
+        ),
+      ),
+    );
+  }
+
+  void _confirmBlock(BuildContext context, AdminProvider adminProvider) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        title: const Text('Block User'),
+        content: Text('Are you sure you want to block ${user.fullName}?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Block', style: TextStyle(color: AppColors.error)),
+          ),
+        ],
+      ),
+    );
+    if (confirm == true) {
+      await adminProvider.blockUser(user.uid);
+    }
+  }
+
+  void _confirmRecover(BuildContext context, AdminProvider adminProvider) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        title: const Text('Recover Account'),
+        content: Text('Are you sure you want to recover ${user.fullName}\'s deleted account?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Recover', style: TextStyle(color: AppColors.success)),
+          ),
+        ],
+      ),
+    );
+    if (confirm == true) {
+      await adminProvider.recoverDeletedUser(user.uid);
+    }
+  }
 }
 
-// ─── Desktop user row ───
+// --- Desktop user row ---
 class _DesktopUserRow extends StatelessWidget {
   final UserModel user;
 
@@ -409,23 +492,6 @@ class _DesktopUserRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final adminProvider = context.read<AdminProvider>();
 
-    Color roleColor;
-    String roleLabel;
-
-    switch (user.role) {
-      case 'recruiter':
-        roleColor = AppColors.primary;
-        roleLabel = 'Recruiter';
-        break;
-      case 'admin':
-        roleColor = AppColors.shortlisted;
-        roleLabel = 'Admin';
-        break;
-      default:
-        roleColor = AppColors.accent;
-        roleLabel = 'Job Seeker';
-    }
-
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       decoration: const BoxDecoration(
@@ -434,6 +500,7 @@ class _DesktopUserRow extends StatelessWidget {
       ),
       child: Row(
         children: [
+          // User column
           Expanded(
             flex: 3,
             child: Row(
@@ -446,47 +513,38 @@ class _DesktopUserRow extends StatelessWidget {
                       : 'U',
                 ),
                 const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      user.fullName,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        user.fullName,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                    Text(
-                      user.email,
-                      style: const TextStyle(
-                        color: AppColors.lightText,
-                        fontSize: 12,
+                      Text(
+                        user.email,
+                        style: const TextStyle(
+                          color: AppColors.lightText,
+                          fontSize: 12,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
+          // Role column
           Expanded(
             flex: 1,
-            child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: roleColor.withAlpha(20),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Text(
-                roleLabel,
-                style: TextStyle(
-                  color: roleColor,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
+            child: _RoleBadge(role: user.role),
           ),
+          // Registered On column
           Expanded(
             flex: 1,
             child: Text(
@@ -497,74 +555,509 @@ class _DesktopUserRow extends StatelessWidget {
               ),
             ),
           ),
+          // Status column
           Expanded(
-            flex: 2,
-            child: Row(
-              children: [
-                if (user.role == 'recruiter')
-                  OutlinedButton(
-                    onPressed: () async {
-                      if (user.recruiterProfile?.isVerified == true) {
-                        await adminProvider.unverifyRecruiter(user.uid);
-                      } else {
-                        await adminProvider.verifyRecruiter(user.uid);
-                      }
-                    },
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
-                      minimumSize: Size.zero,
-                      textStyle: const TextStyle(fontSize: 12),
-                    ),
-                    child: Text(
-                      user.recruiterProfile?.isVerified == true
-                          ? 'Unverify'
-                          : 'Verify',
-                    ),
-                  ),
-                const SizedBox(width: 8),
-                OutlinedButton(
-                  onPressed: () async {
-                    final confirm = await showDialog<bool>(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14)),
-                        title: const Text('Block User'),
-                        content: Text(
-                            'Are you sure you want to block ${user.fullName}?'),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context, false),
-                            child: const Text('Cancel'),
-                          ),
-                          TextButton(
-                            onPressed: () => Navigator.pop(context, true),
-                            child: const Text('Block',
-                                style: TextStyle(color: AppColors.error)),
-                          ),
-                        ],
-                      ),
-                    );
-                    if (confirm == true) {
-                      await adminProvider.blockUser(user.uid);
+            flex: 1,
+            child: _StatusIndicator(isBlocked: user.isBlocked, isDeleted: user.isDeleted),
+          ),
+          // Actions column (3-dot menu)
+          Expanded(
+            flex: 1,
+            child: PopupMenuButton<String>(
+              onSelected: (value) {
+                switch (value) {
+                  case 'view':
+                    _showUserDetails(context, user);
+                    break;
+                  case 'verify':
+                    if (user.recruiterProfile?.isVerified == true) {
+                      adminProvider.unverifyRecruiter(user.uid);
+                    } else {
+                      adminProvider.verifyRecruiter(user.uid);
                     }
-                  },
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 6),
-                    minimumSize: Size.zero,
-                    side: const BorderSide(color: AppColors.error),
-                    textStyle: const TextStyle(fontSize: 12),
-                  ),
-                  child: const Text('Block',
-                      style: TextStyle(color: AppColors.error)),
+                    break;
+                  case 'block':
+                    _confirmBlock(context, adminProvider);
+                    break;
+                  case 'unblock':
+                    adminProvider.unblockUser(user.uid);
+                    break;
+                  case 'recover':
+                    _confirmRecover(context, adminProvider);
+                    break;
+                }
+              },
+              icon: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(6),
                 ),
+                child: const Icon(Icons.more_vert, size: 20, color: AppColors.secondaryText),
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'view',
+                  child: Row(
+                    children: [
+                      Icon(Icons.visibility_outlined, size: 18, color: AppColors.secondaryText),
+                      SizedBox(width: 10),
+                      Text('View Details'),
+                    ],
+                  ),
+                ),
+                if (user.role == 'recruiter')
+                  PopupMenuItem(
+                    value: 'verify',
+                    child: Row(
+                      children: [
+                        Icon(
+                          user.recruiterProfile?.isVerified == true
+                              ? Icons.verified_outlined
+                              : Icons.verified,
+                          size: 18,
+                          color: user.recruiterProfile?.isVerified == true
+                              ? AppColors.warning
+                              : AppColors.success,
+                        ),
+                        const SizedBox(width: 10),
+                        Text(user.recruiterProfile?.isVerified == true
+                            ? 'Unverify'
+                            : 'Verify'),
+                      ],
+                    ),
+                  ),
+                if (!user.isBlocked)
+                  const PopupMenuItem(
+                    value: 'block',
+                    child: Row(
+                      children: [
+                        Icon(Icons.block, size: 18, color: AppColors.error),
+                        SizedBox(width: 10),
+                        Text('Block', style: TextStyle(color: AppColors.error)),
+                      ],
+                    ),
+                  ),
+                if (user.isBlocked)
+                  const PopupMenuItem(
+                    value: 'unblock',
+                    child: Row(
+                      children: [
+                        Icon(Icons.lock_open, size: 18, color: AppColors.success),
+                        SizedBox(width: 10),
+                        Text('Unblock', style: TextStyle(color: AppColors.success)),
+                      ],
+                    ),
+                  ),
+                if (user.isDeleted)
+                  const PopupMenuItem(
+                    value: 'recover',
+                    child: Row(
+                      children: [
+                        Icon(Icons.replay, size: 18, color: AppColors.success),
+                        SizedBox(width: 10),
+                        Text('Recover Account', style: TextStyle(color: AppColors.success)),
+                      ],
+                    ),
+                  ),
               ],
             ),
           ),
         ],
       ),
+    );
+  }
+
+  void _showUserDetails(BuildContext context, UserModel user) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        minChildSize: 0.3,
+        maxChildSize: 0.9,
+        expand: false,
+        builder: (context, scrollController) => _UserDetailsSheet(
+          user: user,
+          scrollController: scrollController,
+        ),
+      ),
+    );
+  }
+
+  void _confirmBlock(BuildContext context, AdminProvider adminProvider) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        title: const Text('Block User'),
+        content: Text('Are you sure you want to block ${user.fullName}?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Block', style: TextStyle(color: AppColors.error)),
+          ),
+        ],
+      ),
+    );
+    if (confirm == true) {
+      await adminProvider.blockUser(user.uid);
+    }
+  }
+
+  void _confirmRecover(BuildContext context, AdminProvider adminProvider) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        title: const Text('Recover Account'),
+        content: Text('Are you sure you want to recover ${user.fullName}\'s deleted account?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Recover', style: TextStyle(color: AppColors.success)),
+          ),
+        ],
+      ),
+    );
+    if (confirm == true) {
+      await adminProvider.recoverDeletedUser(user.uid);
+    }
+  }
+}
+
+// --- Role badge ---
+class _RoleBadge extends StatelessWidget {
+  final String role;
+
+  const _RoleBadge({required this.role});
+
+  @override
+  Widget build(BuildContext context) {
+    Color color;
+    String label;
+
+    switch (role) {
+      case 'recruiter':
+        color = AppColors.primary;
+        label = 'Recruiter';
+        break;
+      case 'admin':
+        color = AppColors.shortlisted;
+        label = 'Admin';
+        break;
+      default:
+        color = AppColors.accent;
+        label = 'Job Seeker';
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withAlpha(20),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
+
+// --- Status indicator ---
+class _StatusIndicator extends StatelessWidget {
+  final bool isBlocked;
+  final bool isDeleted;
+
+  const _StatusIndicator({required this.isBlocked, this.isDeleted = false});
+
+  @override
+  Widget build(BuildContext context) {
+    String label;
+    Color color;
+
+    if (isDeleted) {
+      label = 'Deleted';
+      color = AppColors.warning;
+    } else if (isBlocked) {
+      label = 'Blocked';
+      color = AppColors.error;
+    } else {
+      label = 'Active';
+      color = AppColors.success;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withAlpha(20),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
+
+// --- User details bottom sheet ---
+class _UserDetailsSheet extends StatelessWidget {
+  final UserModel user;
+  final ScrollController scrollController;
+
+  const _UserDetailsSheet({
+    required this.user,
+    required this.scrollController,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: ListView(
+        controller: scrollController,
+        padding: const EdgeInsets.all(24),
+        children: [
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.divider,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // User avatar and name
+          Center(
+            child: Column(
+              children: [
+                ProfileAvatar(
+                  url: user.avatarUrl,
+                  radius: 36,
+                  initials: user.fullName.isNotEmpty
+                      ? user.fullName.substring(0, 1).toUpperCase()
+                      : 'U',
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  user.fullName,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.darkText,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  user.email,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: AppColors.secondaryText,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Details card
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceVariant,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              children: [
+                _DetailRow(
+                  icon: Icons.person_outline,
+                  label: 'Role',
+                  value: user.role == 'job_seeker'
+                      ? 'Job Seeker'
+                      : user.role == 'recruiter'
+                          ? 'Recruiter'
+                          : 'Admin',
+                ),
+                const Divider(height: 24),
+                _DetailRow(
+                  icon: Icons.calendar_today_outlined,
+                  label: 'Registered',
+                  value: DateFormat('MMMM d, yyyy').format(user.createdAt),
+                ),
+                const Divider(height: 24),
+                _DetailRow(
+                  icon: user.isBlocked ? Icons.block : Icons.check_circle_outline,
+                  label: 'Status',
+                  value: user.isBlocked ? 'Blocked' : 'Active',
+                  valueColor: user.isBlocked ? AppColors.error : AppColors.success,
+                ),
+                if (user.phoneNumber.isNotEmpty) ...[
+                  const Divider(height: 24),
+                  _DetailRow(
+                    icon: Icons.phone_outlined,
+                    label: 'Phone',
+                    value: user.phoneNumber,
+                  ),
+                ],
+                if (user.role == 'recruiter' && user.recruiterProfile != null) ...[
+                  const Divider(height: 24),
+                  _DetailRow(
+                    icon: Icons.business_outlined,
+                    label: 'Company',
+                    value: user.recruiterProfile!.companyName.isNotEmpty
+                        ? user.recruiterProfile!.companyName
+                        : 'N/A',
+                  ),
+                  const Divider(height: 24),
+                  _DetailRow(
+                    icon: Icons.verified_outlined,
+                    label: 'Verified',
+                    value: user.recruiterProfile!.isVerified ? 'Yes' : 'No',
+                    valueColor: user.recruiterProfile!.isVerified
+                        ? AppColors.success
+                        : AppColors.lightText,
+                  ),
+                ],
+                if (user.role == 'job_seeker' && user.seekerProfile != null) ...[
+                  if (user.seekerProfile!.headline.isNotEmpty) ...[
+                    const Divider(height: 24),
+                    _DetailRow(
+                      icon: Icons.work_outline,
+                      label: 'Headline',
+                      value: user.seekerProfile!.headline,
+                    ),
+                  ],
+                  if (user.seekerProfile!.location.isNotEmpty) ...[
+                    const Divider(height: 24),
+                    _DetailRow(
+                      icon: Icons.location_on_outlined,
+                      label: 'Location',
+                      value: user.seekerProfile!.location,
+                    ),
+                  ],
+                  if (user.seekerProfile!.skills.isNotEmpty) ...[
+                    const Divider(height: 24),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.star_outline, size: 18, color: AppColors.lightText),
+                            const SizedBox(width: 10),
+                            Text(
+                              'Skills',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: AppColors.secondaryText,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 4,
+                          children: user.seekerProfile!.skills
+                              .map((skill) => Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primary.withAlpha(15),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Text(
+                                      skill,
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: AppColors.primary,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ))
+                              .toList(),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+}
+
+class _DetailRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color? valueColor;
+
+  const _DetailRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+    this.valueColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: AppColors.lightText),
+        const SizedBox(width: 10),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 13,
+            color: AppColors.lightText,
+          ),
+        ),
+        const Spacer(),
+        Flexible(
+          child: Text(
+            value,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: valueColor ?? AppColors.darkText,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
     );
   }
 }

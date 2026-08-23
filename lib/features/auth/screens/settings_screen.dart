@@ -64,54 +64,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onTap: () {},
           ),
           _SettingsTile(
-            icon: Icons.lock_outline,
-            title: 'Change Password',
-            subtitle: 'Update your account password',
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Password reset email sent to your inbox'),
-                ),
-              );
-            },
-          ),
-
-          const SizedBox(height: 8),
-
-          // Notifications Section
-          _SectionHeader('Notifications'),
-          _SwitchTile(
-            icon: Icons.notifications_outlined,
-            title: 'Push Notifications',
-            subtitle: 'Receive alerts for application updates',
-            value: true,
-            onChanged: (value) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    value
-                        ? 'Push notifications enabled'
-                        : 'Push notifications disabled',
+            icon: Icons.lock_reset_outlined,
+            title: 'Forgot Password',
+            subtitle: 'Send a password reset email',
+            onTap: () async {
+              final email = user?.email ?? '';
+              if (email.isEmpty) return;
+              final authProvider = context.read<AuthProvider>();
+              final success = await authProvider.sendPasswordResetEmail(email);
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      success
+                          ? 'Password reset email sent to $email'
+                          : 'Failed to send reset email',
+                    ),
+                    backgroundColor: success ? AppColors.success : AppColors.error,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
-                ),
-              );
-            },
-          ),
-          _SwitchTile(
-            icon: Icons.email_outlined,
-            title: 'Email Notifications',
-            subtitle: 'Get notified via email',
-            value: false,
-            onChanged: (value) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    value
-                        ? 'Email notifications enabled'
-                        : 'Email notifications disabled',
-                  ),
-                ),
-              );
+                );
+              }
             },
           ),
 
@@ -196,12 +172,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
             subtitle: 'Permanently delete your account and all data',
             titleColor: AppColors.error,
             onTap: () async {
+              final reasonController = TextEditingController();
               final confirmed = await showDialog<bool>(
                 context: context,
                 builder: (context) => AlertDialog(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                   title: const Text('Delete Account'),
-                  content: const Text(
-                    'This action is irreversible. All your data will be permanently deleted.',
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Are you sure you want to delete your account? An admin can recover it if needed.',
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: reasonController,
+                        decoration: const InputDecoration(
+                          hintText: 'Reason for deletion (optional)',
+                          isDense: true,
+                        ),
+                        maxLines: 3,
+                      ),
+                    ],
                   ),
                   actions: [
                     TextButton(
@@ -219,17 +214,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               );
               if (confirmed == true && context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      'Account deletion request submitted. You will be signed out.',
-                    ),
-                  ),
+                final authProvider = context.read<AuthProvider>();
+                final success = await authProvider.deleteAccount(
+                  reason: reasonController.text.trim(),
                 );
-                await context.read<AuthProvider>().signOut();
                 if (context.mounted) {
-                  Navigator.of(context)
-                      .pushReplacementNamed('/welcome');
+                  if (success) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Account deleted. You will be signed out.'),
+                        backgroundColor: AppColors.success,
+                      ),
+                    );
+                    Navigator.of(context).pushReplacementNamed('/welcome');
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Failed to delete account.'),
+                        backgroundColor: AppColors.error,
+                      ),
+                    );
+                  }
                 }
               }
             },
@@ -326,49 +331,4 @@ class _SettingsTile extends StatelessWidget {
   }
 }
 
-class _SwitchTile extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final bool value;
-  final ValueChanged<bool> onChanged;
 
-  const _SwitchTile({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.value,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: AppColors.divider, width: 0.5),
-        ),
-      ),
-      child: SwitchListTile(
-        secondary: Icon(icon, color: AppColors.secondaryText),
-        title: Text(
-          title,
-          style: const TextStyle(
-            color: AppColors.darkText,
-            fontSize: 15,
-          ),
-        ),
-        subtitle: Text(
-          subtitle,
-          style: const TextStyle(
-            color: AppColors.lightText,
-            fontSize: 12,
-          ),
-        ),
-        value: value,
-        onChanged: onChanged,
-        activeThumbColor: AppColors.primary,
-      ),
-    );
-  }
-}

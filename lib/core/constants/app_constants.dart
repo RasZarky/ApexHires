@@ -51,5 +51,6 @@ class AppConstants {
     'CAD',
     'AUD',
     'INR',
+    'PKR',
   ];
 }
